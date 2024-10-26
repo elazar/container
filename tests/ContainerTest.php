@@ -8,7 +8,7 @@ use BadMethodCallException;
 use League\Container\Definition\DefinitionInterface;
 use League\Container\Exception\{ContainerException, NotFoundException};
 use League\Container\ServiceProvider\AbstractServiceProvider;
-use League\Container\Test\Asset\{Foo, Bar};
+use League\Container\Test\Asset\{Foo, Bar, Baz, BazInterface, Bay, BayInterface};
 use League\Container\{Container, ContainerAwareTrait, ReflectionContainer};
 use PHPUnit\Framework\TestCase;
 
@@ -21,6 +21,18 @@ class ContainerTest extends TestCase
         self::assertTrue($container->has(Foo::class));
         $foo = $container->get(Foo::class);
         self::assertInstanceOf(Foo::class, $foo);
+    }
+
+    public function testContainerAddsAndGetsNestedInterfaceDependency(): void
+    {
+        $container = new Container();
+        $container->add(BayInterface::class, Bay::class);
+        $container->add(BazInterface::class, Baz::class);
+        $container->add(Bay::class)->addArgument(BazInterface::class);
+        var_dump($container);
+        $bay = $container->get(BayInterface::class);
+        self::assertInstanceOf(BayInterface::class, $bay);
+        self::assertInstanceOf(BazInterface::class, $bay->baz);
     }
 
     public function testContainerAddsAndGetsRecursively(): void
